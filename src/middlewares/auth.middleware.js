@@ -1,7 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler";
 import jwt from "jsonwebtoken";
+import { ApiError } from "../utils/ApiError";
 import { User } from "../models/user.model";
-export const verifyjwt = asyncHandler(async(req, res, next)=>{
+export const verifyJWT = asyncHandler(async(req, res, next)=>{
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
     
@@ -9,14 +10,14 @@ export const verifyjwt = asyncHandler(async(req, res, next)=>{
             throw new ApiError(401, "Unauthorized request")
         }
     
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY)
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         await User.findById(decodedToken?._id).select("-password -refreshToken")
     
-        if (!user){
+        if (!User){
           throw new ApiError(401, "Invalid Access Token")  
         }
     
-        req.user = user;
+        req.user = User;
         next()
     } catch (error) {
         throw new ApiError(401, "Invalid Authorized")
